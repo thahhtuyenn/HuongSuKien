@@ -1,11 +1,14 @@
 package tuan02_qlNhanVien;
 
-public class Employee {
-	private String id, firstName, lastName, gender;
+import java.io.Serializable;
+
+public class Employee implements Serializable{
+	private String id, firstName, lastName;
+	private boolean gender;
 	private double salary;
 	private int age;
 
-	public Employee(String id, String firstName, String lastName, String gender, double salary, int age) {
+	public Employee(String id, String firstName, String lastName, boolean gender, double salary, int age) {
 		this.id = id;
 		this.firstName = firstName;
 		this.lastName = lastName;
@@ -18,56 +21,56 @@ public class Employee {
 		this.id = id;
 		this.firstName = "";
 		this.lastName = "";
-		this.gender = "";
+		this.gender = false;
 		this.salary = 0;
 		this.age = 1;
 	}
 
-	public String getid() {
+	public String getId() {
 		return id;
 	}
 
-	public void setid(String id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 
-	public String getfirstName() {
+	public String getFirstName() {
 		return firstName;
 	}
 
-	public void setfirstName(String firstName) {
+	public void setFirstName(String firstName) {
 		this.firstName = firstName;
 	}
 
-	public String getlastName() {
+	public String getLastName() {
 		return lastName;
 	}
 
-	public void setlastName(String lastName) {
+	public void setLastName(String lastName) {
 		this.lastName = lastName;
 	}
 
-	public String getgender() {
+	public boolean isGender() {
 		return gender;
 	}
 
-	public void setgender(String gender) {
+	public void setGender(boolean gender) {
 		this.gender = gender;
 	}
 
-	public double getsalary() {
+	public double getSalary() {
 		return salary;
 	}
 
-	public void setsalary(double salary) {
+	public void setSalary(double salary) {
 		this.salary = salary;
 	}
 
-	public int getage() {
+	public int getAge() {
 		return age;
 	}
 
-	public void setage(int age) {
+	public void setAge(int age) {
 		this.age = age;
 	}
 

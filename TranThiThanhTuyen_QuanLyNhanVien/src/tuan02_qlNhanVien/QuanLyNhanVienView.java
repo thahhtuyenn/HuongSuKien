@@ -7,6 +7,9 @@ import java.awt.HeadlessException;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.text.DecimalFormat;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -30,7 +33,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
-public class QuanLyNhanVienView extends JFrame implements ActionListener{
+public class QuanLyNhanVienView extends JFrame implements ActionListener, MouseListener{
 	private ListEmployee listEmployeeModel;
 	private JLabel jlbTitle, jlbMaNhanVien,jlbHo,jlbTen,jlbTuoi,jlbPhai,jlbTienLuong,jlbNhapMa;
 	private JTextField jtxMaNhanVien,jtxHo,jtxTen,jtxTuoi,jtxTienLuong,jtxNhapMa;
@@ -40,6 +43,7 @@ public class QuanLyNhanVienView extends JFrame implements ActionListener{
 	private JButton jbtTim,jbtThem,jbtXoaTrang,jbtXoa,jbtLuu, jbtSua;
 	private JPanel jpnNorth;
 	private JPanel jpnCenter;
+	private Database database;
 
 	public QuanLyNhanVienView() {
 		this.setTitle("^-^");
@@ -49,10 +53,11 @@ public class QuanLyNhanVienView extends JFrame implements ActionListener{
 		this.setResizable(false);
 		createGUI();
 		this.setVisible(true);
+		loadData();
 	}
 
 	private void createGUI() {
-		listEmployeeModel = new ListEmployee();
+		database = new Database();
 		Font font = new Font("Arial", Font.BOLD, 12);
 
 		// ------------------------ JPanel north ---------------------------
@@ -180,6 +185,9 @@ public class QuanLyNhanVienView extends JFrame implements ActionListener{
 		jbtThem.addActionListener(this);
 		jbtXoaTrang.addActionListener(this);
 		jbtTim.addActionListener(this);
+		table.addMouseListener(this);
+		jbtXoa.addActionListener(this);
+		jbtSua.addActionListener(this);
 	}
 	
 	public void taoBang() {
@@ -203,15 +211,54 @@ public class QuanLyNhanVienView extends JFrame implements ActionListener{
 		DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
 		rightRenderer.setHorizontalAlignment(DefaultTableCellRenderer.RIGHT);
 		DefaultTableCellRenderer center = new DefaultTableCellRenderer();
-		center.setHorizontalAlignment(DefaultTableCellRenderer.RIGHT);
+		center.setHorizontalAlignment(DefaultTableCellRenderer.CENTER);
 		table.getColumnModel().getColumn(0).setCellRenderer(center);
-		table.getColumnModel().getColumn(3).setCellRenderer(rightRenderer);
+		table.getColumnModel().getColumn(3).setCellRenderer(center);
 		table.getColumnModel().getColumn(4).setCellRenderer(rightRenderer);
 		table.getColumnModel().getColumn(5).setCellRenderer(rightRenderer);
 		
 		JScrollPane sp = new JScrollPane(table);
 		sp.setPreferredSize(new Dimension(650, 300));
 		jpnCenter.add(sp);
+	}
+	
+	private void nhanVien() {
+		DecimalFormat df = new DecimalFormat("#,###");
+		
+		listEmployeeModel.addEmployee(new Employee("NV001", "Lê Đôn", "Chủng", false, 12000000, 20));
+		listEmployeeModel.addEmployee(new Employee("NV002", "Trần Thị Thanh", "Tuyền", true, 11000000, 20));
+		listEmployeeModel.addEmployee(new Employee("NV003", "Trần Trung", "Hiếu", false, 9500000, 25));
+		listEmployeeModel.addEmployee(new Employee("NV004", "Võ Thành", "Nhớ", false, 900000, 22));
+		listEmployeeModel.addEmployee(new Employee("NV005", "Lê Trần Trâm", "Anh", true, 10000000, 18));
+		
+		for (Employee e : listEmployeeModel.getDs()) {
+			String gender = "";
+			if(e.isGender() == false)
+				gender = "Nam";
+			else
+				gender = "Nữ";
+			tableModel.addRow(new String[] {e.getId(), e.getFirstName(), e.getLastName(), gender, e.getAge() + "", df.format(e.getSalary())});
+			database.saveFile("NhanVien.dat", listEmployeeModel);
+		}
+		
+	}
+	
+	public void loadData(){
+		listEmployeeModel = null;
+		listEmployeeModel = (ListEmployee)database.readFile("NhanVien.dat");
+		if(listEmployeeModel == null) {
+			listEmployeeModel = new ListEmployee();
+		}else {
+			for (Employee epl : listEmployeeModel.getDs()) {
+				String gt = "";
+				if(epl.isGender() == false)
+					gt = "Nam";
+				else
+					gt = "Nữ";
+				DecimalFormat df = new DecimalFormat("#,###");
+				tableModel.addRow(new String[] {epl.getId(), epl.getFirstName(), epl.getLastName(), gt, epl.getAge() + "", df.format(epl.getSalary())});
+			}
+		}
 	}
 
 	public void thucHienChucNangTim() {
@@ -222,10 +269,22 @@ public class QuanLyNhanVienView extends JFrame implements ActionListener{
 			JOptionPane.showMessageDialog(this, "Không tìm thấy nhân viên có mã " + id + "!");
 		}else {
 			table.setRowSelectionInterval(vitri, vitri);
+			Employee e = listEmployeeModel.getEmployeeByIndex(vitri);
+			jtxMaNhanVien.setText(e.getId());
+			jtxHo.setText(e.getFirstName());
+			jtxTen.setText(e.getLastName());
+			jtxTuoi.setText(e.getAge() + "");
+			if(e.isGender() == false)
+				jbtNam.setSelected(true);
+			else
+				jbtNu.setSelected(true);
+			DecimalFormat df = new DecimalFormat("###");
+			jtxTienLuong.setText(df.format(e.getSalary()));
 		}
 	}
 	
 	public void thucHienChucNangThem() {
+		DecimalFormat df = new DecimalFormat("#,###");
 		try {
 			String id = jtxMaNhanVien.getText().trim();
 			if(id == "") {
@@ -253,16 +312,22 @@ public class QuanLyNhanVienView extends JFrame implements ActionListener{
 			}
 			double salary = Double.parseDouble(jtxTienLuong.getText().trim());
 			
-			String gender = "";
+			String genderRow = "";
+			boolean gender = false;
 			if(jbtNam.isSelected()) {
-				gender = "Nam";
+				gender = false;
+				genderRow = "Nam";
 			}else {
-				gender = "Nữ";
+				gender = true;
+				genderRow = "Nữ";
 			}
+			
+			
 			
 			Employee newEmployee = new Employee(id, firstName, lastName, gender, salary, age);
 			if(listEmployeeModel.addEmployee(newEmployee)) {
-				tableModel.addRow(new String[] {id, firstName, lastName, gender, salary + "", age + ""});
+				tableModel.addRow(new String[] {id, firstName, lastName, genderRow,  age + "",df.format(salary)});
+				database.saveFile("NhanVien.dat", listEmployeeModel);
 			}
 				
 			else
@@ -272,6 +337,42 @@ public class QuanLyNhanVienView extends JFrame implements ActionListener{
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(this, "Vui lòng nhập số!");
 			System.out.println(e.getMessage());
+		}
+	}
+	
+	public void thucHienChucNangSua() {
+		String id = jtxMaNhanVien.getText().trim();
+		String firstName = jtxHo.getText().trim();
+		String lastName = jtxTen.getText().trim();
+		String age = jtxTuoi.getText().trim();
+		String salary = jtxTienLuong.getText().trim();
+		int row = table.getSelectedRow();
+		boolean gtinh = false;
+		if(jbtNam.isSelected())
+			gtinh = false;
+		else if(jbtNu.isSelected())
+			gtinh = true;
+		
+		if(row >= 0) {
+			String idOld = (String) table.getValueAt(row, 0);
+			if(idOld.equals(id)) {
+				Employee e = new Employee(idOld, firstName, lastName, gtinh, Double.parseDouble(salary), Integer.parseInt(age));
+				listEmployeeModel.update(idOld, firstName, lastName, gtinh, Double.parseDouble(salary), Integer.parseInt(age));
+				String gender = "";
+				if(gtinh == false) {
+					gender = "Nam";
+				}else if(gtinh == true)
+					gender = "Nữ";
+				tableModel.setValueAt(e.getFirstName(), row, 1);
+				tableModel.setValueAt(e.getLastName(), row, 2);
+				tableModel.setValueAt(e.getAge(), row, 4);
+				tableModel.setValueAt(gender, row, 3);
+				DecimalFormat df = new DecimalFormat("#,###");
+				tableModel.setValueAt(df.format(e.getSalary()), row, 5);
+				JOptionPane.showMessageDialog(this, "Cập nhật thông tin thành công!");
+			}else {
+				JOptionPane.showMessageDialog(this, "Không thể cập nhật mã nhân viên!");
+			}
 		}
 	}
 	
@@ -285,7 +386,25 @@ public class QuanLyNhanVienView extends JFrame implements ActionListener{
 	}
 	
 	public void thucHienChucNangXoa() {
+		int row  = table.getSelectedRow();
+		Employee epl = listEmployeeModel.getEmployeeByIndex(row);
 		
+		if(row >= 0) {
+			int op = JOptionPane.showConfirmDialog(this, "Bạn có muốn xóa nhân viên có mã " + epl.getId() + " không?", "Delete Employee", JOptionPane.YES_NO_OPTION);
+			if(op == JOptionPane.YES_OPTION) {
+				tableModel.removeRow(row);
+				listEmployeeModel.removeEmployee(epl);
+				thucHienChucNangXoaTrang();
+				database.saveFile("NhanVien.dat", listEmployeeModel);
+			}
+		}else {
+			JOptionPane.showMessageDialog(this, "Bạn chưa chọn dòng cần xóa!");
+		}
+		
+	}
+	
+	public void thucHienChucNangLuu() {
+		database.saveFile("NhanVien.dat", listEmployeeModel);
 	}
 	
 
@@ -298,11 +417,64 @@ public class QuanLyNhanVienView extends JFrame implements ActionListener{
 			thucHienChucNangXoaTrang();
 		}else if(o.equals(jbtTim)) {
 			thucHienChucNangTim();
+		}else if(o.equals(jbtXoa)) {
+			thucHienChucNangXoa();
+		}else if(o.equals(jbtSua)) {
+			thucHienChucNangSua();
+		}else if(o.equals(jbtLuu)) {
+			thucHienChucNangLuu();
 		}
 		
 	}
 	
 	public static void main(String[] args) {
 		new QuanLyNhanVienView();
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		DecimalFormat df = new DecimalFormat("###");
+		int row = table.getSelectedRow();
+		
+		Employee epl = listEmployeeModel.getEmployeeByIndex(row);
+		
+		if(epl == null)
+			JOptionPane.showMessageDialog(this, "Bạn chưa chọn nhân viên nào!");
+		else {
+			jtxMaNhanVien.setText(epl.getId());
+			jtxHo.setText(epl.getFirstName());
+			jtxTen.setText(epl.getLastName());
+			jtxTuoi.setText(epl.getAge() + "");
+			jtxTienLuong.setText(df.format(epl.getSalary()));
+			if(epl.isGender() == false)
+				jbtNam.setSelected(true);
+			else
+				jbtNu.setSelected(true);
+		}
+		
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 }
