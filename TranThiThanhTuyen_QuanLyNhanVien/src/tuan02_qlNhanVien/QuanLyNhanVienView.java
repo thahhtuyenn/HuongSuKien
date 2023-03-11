@@ -238,14 +238,24 @@ public class QuanLyNhanVienView extends JFrame implements ActionListener, MouseL
 			else
 				gender = "Nữ";
 			tableModel.addRow(new String[] {e.getId(), e.getFirstName(), e.getLastName(), gender, e.getAge() + "", df.format(e.getSalary())});
-			database.saveFile("NhanVien.dat", listEmployeeModel);
+			try {
+				database.saveFile("NhanVien.dat", listEmployeeModel);
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		}
 		
 	}
 	
 	public void loadData(){
 		listEmployeeModel = null;
-		listEmployeeModel = (ListEmployee)database.readFile("NhanVien.dat");
+		try {
+			listEmployeeModel = (ListEmployee)database.readFile("NhanVien.dat");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		if(listEmployeeModel == null) {
 			listEmployeeModel = new ListEmployee();
 		}else {
@@ -395,7 +405,12 @@ public class QuanLyNhanVienView extends JFrame implements ActionListener, MouseL
 				tableModel.removeRow(row);
 				listEmployeeModel.removeEmployee(epl);
 				thucHienChucNangXoaTrang();
-				database.saveFile("NhanVien.dat", listEmployeeModel);
+				try {
+					database.saveFile("NhanVien.dat", listEmployeeModel);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}else {
 			JOptionPane.showMessageDialog(this, "Bạn chưa chọn dòng cần xóa!");
@@ -404,7 +419,12 @@ public class QuanLyNhanVienView extends JFrame implements ActionListener, MouseL
 	}
 	
 	public void thucHienChucNangLuu() {
-		database.saveFile("NhanVien.dat", listEmployeeModel);
+		try {
+			database.saveFile("NhanVien.dat", listEmployeeModel);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 

@@ -1,4 +1,4 @@
-package tuan02_qlNhanVien;
+package quanLySach;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -8,10 +8,7 @@ import java.io.ObjectOutputStream;
 import javax.swing.JOptionPane;
 
 public class Database {
-	public Database() {
-		
-	}
-
+	
 	public void saveFile(String fileName, Object o) throws Exception{
 		FileOutputStream fos = null;
 		ObjectOutputStream oos = null;
@@ -25,7 +22,7 @@ public class Database {
 			return;
 		}
 	}
-
+	
 	public Object readFile(String fileName) throws Exception{
 		Object o = null;
 		FileInputStream fis = null;
